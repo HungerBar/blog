@@ -121,6 +121,8 @@ h2 {
 
 .home-actions {
   margin: 0 0 12px;
+  text-align: center;
+  transform: translateY(-6px);
 }
 
 .pixel-logo {

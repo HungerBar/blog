@@ -22,6 +22,8 @@ test("home page exposes a small resume button", () => {
   assert.equal(styles.includes("font-size: 1.1rem"), true);
   assert.equal(styles.includes("font-weight: 700"), true);
   assert.equal(styles.includes("margin: 0 0 12px"), true);
+  assert.equal(styles.includes("text-align: center"), true);
+  assert.equal(styles.includes("transform: translateY(-6px)"), true);
 });
 
 test("home shell opens resume by command", () => {
