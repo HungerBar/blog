@@ -368,15 +368,9 @@ body[data-input-mode="visual"] .terminal-input {
   outline-offset: 8px;
 }
 
-.visual-line-selection,
 .visual-selection {
   background: var(--inverse);
   color: var(--bg);
-}
-
-.visual-line-selection a {
-  color: var(--bg);
-  text-decoration: underline;
 }
 
 @media (max-width: 640px) {

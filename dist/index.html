@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="A minimal personal blog."><title>Blog</title><link rel="stylesheet" href="/_astro/BaseLayout.BfCsj8Ts.css"></head><body><header class="tmux-bar" aria-label="Session status"><span>[blog]</span><span>0:shell</span><span class="tmux-right">ready</span></header><main><section class="terminal" data-terminal><div class="home-stage" data-home-stage><pre class="pixel-logo" aria-label="Hungerbar">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="A minimal personal blog."><title>Blog</title><link rel="stylesheet" href="/_astro/BaseLayout.BgdRTzUM.css"></head><body><header class="tmux-bar" aria-label="Session status"><span>[blog]</span><span>0:shell</span><span class="tmux-right">ready</span></header><main><section class="terminal" data-terminal><div class="home-stage" data-home-stage><pre class="pixel-logo" aria-label="Hungerbar">
 █   █ █   █ █   █  ███  █████ ████  ████   ███  ████
 █   █ █   █ ██  █ █   █ █     █   █ █   █ █   █ █   █
 █████ █   █ █ █ █ █     ███   ████  ████  █████ ████
@@ -348,9 +348,7 @@ const latestDate = "2026-07-03";
     }
 
     function clearVisualSelection() {
-      for (const element of output.querySelectorAll(".visual-line-selection")) {
-        element.classList.remove("visual-line-selection");
-      }
+      window.getSelection()?.removeAllRanges();
       visualAnchor = null;
       visualFocus = null;
     }
@@ -422,24 +420,71 @@ const latestDate = "2026-07-03";
     }
 
     function renderVisualSelection() {
-      for (const element of output.querySelectorAll(".visual-line-selection")) {
-        element.classList.remove("visual-line-selection");
-      }
-
       if (!visualAnchor || !visualFocus) {
         return;
       }
 
       if (visualAnchor.pane === "output") {
         const targets = getOutputCursorTargets();
-        const start = Math.min(visualAnchor.index, visualFocus.index);
-        const end = Math.max(visualAnchor.index, visualFocus.index);
-        for (let index = start; index <= end; index += 1) {
-          targets[index]?.classList.add("visual-line-selection");
+        const range = createVisualRange(targets);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        if (range) {
+          selection?.addRange(range);
         }
       } else {
         renderCommandCursor();
       }
+    }
+
+    function createVisualRange(targets) {
+      const startPosition = compareVisualPositions(visualAnchor, visualFocus) <= 0
+        ? visualAnchor
+        : visualFocus;
+      const endPosition = startPosition === visualAnchor ? visualFocus : visualAnchor;
+      const startTarget = targets[startPosition.index];
+      const endTarget = targets[endPosition.index];
+      if (!startTarget || !endTarget) {
+        return null;
+      }
+
+      const range = document.createRange();
+      const start = getTextPosition(startTarget, startPosition.column);
+      const end = getTextPosition(endTarget, endPosition.column + 1);
+      range.setStart(start.node, start.offset);
+      range.setEnd(end.node, end.offset);
+      return range;
+    }
+
+    function compareVisualPositions(first, second) {
+      if (first.index !== second.index) {
+        return first.index - second.index;
+      }
+      return first.column - second.column;
+    }
+
+    function getTextPosition(element, column) {
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+      let remaining = Math.max(0, column);
+      let node = walker.nextNode();
+      let lastNode = null;
+
+      while (node) {
+        lastNode = node;
+        const value = node.nodeValue ?? "";
+        if (remaining <= value.length) {
+          return { node, offset: remaining };
+        }
+        remaining -= value.length;
+        node = walker.nextNode();
+      }
+
+      if (lastNode) {
+        return { node: lastNode, offset: lastNode.nodeValue?.length ?? 0 };
+      }
+
+      element.append(document.createTextNode(""));
+      return { node: element.firstChild, offset: 0 };
     }
 
     function getInputVisualRange() {
@@ -456,13 +501,7 @@ const latestDate = "2026-07-03";
       }
 
       if (visualAnchor.pane === "output") {
-        const targets = getOutputCursorTargets();
-        const start = Math.min(visualAnchor.index, visualFocus.index);
-        const end = Math.max(visualAnchor.index, visualFocus.index);
-        return targets
-          .slice(start, end + 1)
-          .map((element) => element.dataset.rawText || element.textContent)
-          .join("\n");
+        return window.getSelection()?.toString() || "";
       }
 
       const { start, end } = getInputVisualRange();

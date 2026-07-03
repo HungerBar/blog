@@ -25,7 +25,7 @@ test("post pages expose a bottom shell with vim-style navigation", () => {
   assert.equal(postPage.includes("data-post-prompt"), true);
   assert.equal(postPage.includes("~/blog/posts/{post.id}.md >"), true);
   assert.equal(postPage.includes("post-command"), true);
-  assert.equal(postPage.includes(":q to shell"), true);
+  assert.equal(postPage.includes("reader-hint"), false);
   assert.equal(postPage.includes('command === ":q"'), true);
   assert.equal(postPage.includes('event.key === "j"'), true);
   assert.equal(postPage.includes('event.key === "k"'), true);
@@ -139,7 +139,8 @@ test("home shell supports visual selection, copy, change, and delete commands", 
   assert.equal(homePage.includes('event.key === "c"'), true);
   assert.equal(homePage.includes('event.key === "d"'), true);
   assert.equal(homePage.includes("navigator.clipboard.writeText"), true);
-  assert.equal(styles.includes(".visual-line-selection"), true);
+  assert.equal(homePage.includes("document.createRange"), true);
+  assert.equal(homePage.includes("window.getSelection"), true);
   assert.equal(styles.includes(".visual-selection"), true);
   assert.equal(styles.includes('body[data-input-mode="visual"]'), true);
 });
@@ -169,6 +170,8 @@ test("post reader supports visual selection and copying from content", () => {
   assert.equal(postPage.includes('event.key === "c"'), true);
   assert.equal(postPage.includes('event.key === "d"'), true);
   assert.equal(postPage.includes("navigator.clipboard.writeText"), true);
+  assert.equal(postPage.includes("document.createRange"), true);
+  assert.equal(postPage.includes("window.getSelection"), true);
 });
 
 test("styles expose block cursor in normal mode and wider reading surface", () => {
