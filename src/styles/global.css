@@ -93,10 +93,26 @@ h2 {
 }
 
 .terminal {
+  position: relative;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   height: calc(100vh - 29px);
   padding: 28px 0 20px;
+}
+
+.resume-link {
+  position: absolute;
+  top: 18px;
+  right: 0;
+  border: 1px solid var(--line);
+  padding: 2px 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.resume-link:hover {
+  color: var(--text);
+  text-decoration: none;
 }
 
 .home-stage {
@@ -333,6 +349,24 @@ body[data-input-mode="visual"] .terminal-input {
 .reader-frame .article {
   padding-top: 6px;
   padding-bottom: 36px;
+}
+
+.resume-layout .reader-frame .article {
+  padding-top: 20px;
+}
+
+.resume-return {
+  display: inline-block;
+  margin-bottom: 24px;
+  border: 1px solid var(--line);
+  padding: 2px 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.resume-return:hover {
+  color: var(--text);
+  text-decoration: none;
 }
 
 .article header {

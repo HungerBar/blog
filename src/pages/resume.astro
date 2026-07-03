@@ -1,0 +1,204 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Resume" description="Personal resume." section="resume">
+  <section class="reader-layout resume-layout">
+    <div class="reader-frame" data-resume-frame tabindex="0">
+      <article class="article article-with-shell resume-article" data-resume-content>
+        <a class="resume-return" href="/">← blog</a>
+
+        <header>
+          <p class="command-label">~/blog $ open resume</p>
+          <h1>简历</h1>
+        </header>
+
+        <section>
+          <h2>教育经历</h2>
+        </section>
+
+        <section>
+          <h2>项目</h2>
+        </section>
+      </article>
+    </div>
+
+    <form class="terminal-input post-command" data-resume-command-form>
+      <span class="prompt" data-resume-prompt>~/blog/resume.md ></span>
+      <span class="command-entry">
+        <span class="normal-command-view" data-normal-command-view aria-hidden="true"></span>
+        <input
+          data-resume-command-input
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Resume command input"
+        />
+      </span>
+    </form>
+  </section>
+
+  <script>
+    const input = document.querySelector("[data-resume-command-input]");
+    const form = document.querySelector("[data-resume-command-form]");
+    const resumeFrame = document.querySelector("[data-resume-frame]");
+    const normalCommandView = document.querySelector("[data-normal-command-view]");
+    let inputMode = "normal";
+    let focusPane = "output";
+    let focusTimer;
+
+    function setInputMode(nextMode, options = {}) {
+      inputMode = nextMode;
+      document.body.dataset.inputMode = nextMode;
+      focusPane = "input";
+      document.body.dataset.focusPane = focusPane;
+      input.focus();
+      if (options.append) {
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
+      updateCursorView();
+    }
+
+    function focusOutput() {
+      inputMode = "normal";
+      document.body.dataset.inputMode = "normal";
+      focusPane = "output";
+      document.body.dataset.focusPane = focusPane;
+      resumeFrame.focus();
+      flashFocusRing(resumeFrame);
+    }
+
+    function focusInput(options = {}) {
+      setInputMode("insert", options);
+      flashFocusRing(form);
+    }
+
+    function moveCursor(delta) {
+      const position = input.selectionStart ?? input.value.length;
+      const next = Math.max(0, Math.min(input.value.length, position + delta));
+      input.setSelectionRange(next, next);
+      input.focus();
+      updateCursorView();
+    }
+
+    function flashFocusRing(element) {
+      clearTimeout(focusTimer);
+      resumeFrame.classList.remove("focus-ring");
+      form.classList.remove("focus-ring");
+      element.classList.add("focus-ring");
+      focusTimer = setTimeout(() => {
+        element.classList.remove("focus-ring");
+      }, 1400);
+    }
+
+    function updateCursorView() {
+      const position = input.selectionStart ?? input.value.length;
+      const value = input.value;
+      const hasCharacter = position < value.length;
+      const before = value.slice(0, position);
+      const cell = hasCharacter ? value[position] : " ";
+      const after = hasCharacter ? value.slice(position + 1) : "";
+      normalCommandView.replaceChildren(
+        document.createTextNode(before),
+        createCursorCell(cell, !hasCharacter),
+        document.createTextNode(after),
+      );
+    }
+
+    function createCursorCell(text, placeholder = false) {
+      const span = document.createElement("span");
+      span.className = "cursor-cell";
+      span.textContent = text;
+      if (placeholder) {
+        span.dataset.placeholder = "true";
+      }
+      return span;
+    }
+
+    function run(rawCommand) {
+      const command = rawCommand.trim();
+      if (command === ":q" || command === "q") {
+        window.location.href = "/";
+      }
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      run(input.value);
+      input.value = "";
+      setInputMode("insert");
+    });
+
+    input.addEventListener("keydown", handleKeyboard);
+    input.addEventListener("input", updateCursorView);
+    input.addEventListener("click", updateCursorView);
+    input.addEventListener("keyup", updateCursorView);
+    resumeFrame.addEventListener("keydown", handleKeyboard);
+    document.addEventListener("keydown", (event) => {
+      if (event.target === input || event.target === resumeFrame) {
+        return;
+      }
+
+      handleKeyboard(event);
+    });
+
+    function handleKeyboard(event) {
+      if (event.ctrlKey && event.key === "j") {
+        event.preventDefault();
+        focusInput();
+        return;
+      }
+
+      if (event.ctrlKey && event.key === "k") {
+        event.preventDefault();
+        focusOutput();
+        return;
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setInputMode("normal");
+        return;
+      }
+
+      if (inputMode === "insert") {
+        return;
+      }
+
+      if (event.key === "i") {
+        event.preventDefault();
+        focusInput({ append: false });
+        return;
+      }
+
+      if (event.key === "a") {
+        event.preventDefault();
+        moveCursor(1);
+        focusInput({ append: true });
+        return;
+      }
+
+      if (event.key === ":") {
+        event.preventDefault();
+        input.value = ":";
+        setInputMode("insert", { append: true });
+        return;
+      }
+
+      if (event.key === "h") {
+        event.preventDefault();
+        moveCursor(-1);
+        return;
+      }
+
+      if (event.key === "l") {
+        event.preventDefault();
+        moveCursor(1);
+      }
+    }
+
+    document.body.dataset.inputMode = inputMode;
+    document.body.dataset.focusPane = focusPane;
+    updateCursorView();
+    resumeFrame.focus();
+  </script>
+</BaseLayout>
