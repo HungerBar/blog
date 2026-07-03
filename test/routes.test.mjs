@@ -17,6 +17,9 @@ test("post pages render tags as text only", () => {
 test("post pages expose a bottom shell with vim-style navigation", () => {
   const postPage = readFileSync("src/pages/posts/[slug].astro", "utf8");
 
+  assert.equal(postPage.includes('class="reader-layout"'), true);
+  assert.equal(postPage.includes('class="reader-frame"'), true);
+  assert.equal(postPage.includes("data-reader-frame"), true);
   assert.equal(postPage.includes("data-post-command-form"), true);
   assert.equal(postPage.includes("data-post-command-input"), true);
   assert.equal(postPage.includes("data-post-prompt"), true);
@@ -29,6 +32,21 @@ test("post pages expose a bottom shell with vim-style navigation", () => {
   assert.equal(postPage.includes('event.key === "g"'), true);
   assert.equal(postPage.includes('event.key === "G"'), true);
 });
+
+test("post reader keeps content in an independent block above the shell", () => {
+  const postPage = readFileSync("src/pages/posts/[slug].astro", "utf8");
+  const styles = readFileSync("src/styles/global.css", "utf8");
+
+  assert.equal(postPage.includes("readerFrame"), true);
+  assert.equal(postPage.includes("readerFrame.scrollBy"), true);
+  assert.equal(postPage.includes("readerFrame.scrollTo"), true);
+  assert.equal(styles.includes(".reader-layout"), true);
+  assert.equal(styles.includes(".reader-frame"), true);
+  assert.equal(styles.includes("grid-template-rows: minmax(0, 1fr) auto"), true);
+  assert.equal(styles.includes(".post-command"), true);
+  assert.equal(styles.includes("position: fixed"), false);
+}
+);
 
 test("home shell supports normal and insert keyboard modes", () => {
   const homePage = readFileSync("src/pages/index.astro", "utf8");
@@ -106,6 +124,26 @@ test("upper content links can be opened with Enter in normal mode", () => {
   assert.equal(postPage.includes("window.location.href = link.href"), true);
 });
 
+test("home shell supports visual selection, copy, change, and delete commands", () => {
+  const homePage = readFileSync("src/pages/index.astro", "utf8");
+  const styles = readFileSync("src/styles/global.css", "utf8");
+
+  assert.equal(homePage.includes("startVisualSelection"), true);
+  assert.equal(homePage.includes("clearVisualSelection"), true);
+  assert.equal(homePage.includes("copyVisualSelection"), true);
+  assert.equal(homePage.includes("changeVisualSelection"), true);
+  assert.equal(homePage.includes("deleteVisualSelection"), true);
+  assert.equal(homePage.includes("extendVisualSelection"), true);
+  assert.equal(homePage.includes('event.key === "v"'), true);
+  assert.equal(homePage.includes('event.key === "y"'), true);
+  assert.equal(homePage.includes('event.key === "c"'), true);
+  assert.equal(homePage.includes('event.key === "d"'), true);
+  assert.equal(homePage.includes("navigator.clipboard.writeText"), true);
+  assert.equal(styles.includes(".visual-line-selection"), true);
+  assert.equal(styles.includes(".visual-selection"), true);
+  assert.equal(styles.includes('body[data-input-mode="visual"]'), true);
+});
+
 test("post shell supports normal and insert keyboard modes", () => {
   const postPage = readFileSync("src/pages/posts/[slug].astro", "utf8");
 
@@ -117,6 +155,20 @@ test("post shell supports normal and insert keyboard modes", () => {
   assert.equal(postPage.includes('event.key === "l"'), true);
   assert.equal(postPage.includes('event.ctrlKey && event.key === "j"'), true);
   assert.equal(postPage.includes('event.ctrlKey && event.key === "k"'), true);
+});
+
+test("post reader supports visual selection and copying from content", () => {
+  const postPage = readFileSync("src/pages/posts/[slug].astro", "utf8");
+
+  assert.equal(postPage.includes("startVisualSelection"), true);
+  assert.equal(postPage.includes("clearVisualSelection"), true);
+  assert.equal(postPage.includes("copyVisualSelection"), true);
+  assert.equal(postPage.includes("extendVisualSelection"), true);
+  assert.equal(postPage.includes('event.key === "v"'), true);
+  assert.equal(postPage.includes('event.key === "y"'), true);
+  assert.equal(postPage.includes('event.key === "c"'), true);
+  assert.equal(postPage.includes('event.key === "d"'), true);
+  assert.equal(postPage.includes("navigator.clipboard.writeText"), true);
 });
 
 test("styles expose block cursor in normal mode and wider reading surface", () => {

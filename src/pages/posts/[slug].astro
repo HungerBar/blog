@@ -20,58 +20,68 @@ const { Content } = await render(post);
 ---
 
 <BaseLayout title={post.data.title} description={post.data.excerpt}>
-  <article class="article article-with-shell" data-post-content tabindex="0">
-    <header>
-      <p class="command-label">~/blog $ open {post.id}</p>
-      <h1>{post.data.title}</h1>
-      <p class="meta">
-        <time datetime={formatDate(post.data.date)}>{formatDate(post.data.date)}</time>
-      </p>
-      <p class="tag-cloud">
-        {
-          post.data.tags.map((tag) => (
-            <span class="tag">{tag}</span>
-          ))
-        }
-      </p>
-    </header>
+  <section class="reader-layout">
+    <div class="reader-frame" data-reader-frame tabindex="0">
+      <article class="article article-with-shell" data-post-content>
+        <header>
+          <p class="command-label">~/blog $ open {post.id}</p>
+          <h1>{post.data.title}</h1>
+          <p class="meta">
+            <time datetime={formatDate(post.data.date)}>{formatDate(post.data.date)}</time>
+          </p>
+          <p class="tag-cloud">
+            {
+              post.data.tags.map((tag) => (
+                <span class="tag">{tag}</span>
+              ))
+            }
+          </p>
+        </header>
 
-    <Content />
-    <p class="reader-hint">:q to shell | Esc normal | i/a insert | j/k scroll | g/G top/bottom</p>
-  </article>
+        <Content />
+        <p class="reader-hint">:q to shell | Esc normal | i/a insert | j/k scroll | g/G top/bottom</p>
+      </article>
+    </div>
 
-  <form class="terminal-input post-command" data-post-command-form>
-    <span class="prompt" data-post-prompt>~/blog/posts/{post.id}.md ></span>
-    <span class="command-entry">
-      <span class="normal-command-view" data-normal-command-view aria-hidden="true"></span>
-      <input
-        data-post-command-input
-        autocomplete="off"
-        spellcheck="false"
-        aria-label="Post command input"
-      />
-    </span>
-  </form>
+    <form class="terminal-input post-command" data-post-command-form>
+      <span class="prompt" data-post-prompt>~/blog/posts/{post.id}.md ></span>
+      <span class="command-entry">
+        <span class="normal-command-view" data-normal-command-view aria-hidden="true"></span>
+        <input
+          data-post-command-input
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Post command input"
+        />
+      </span>
+    </form>
+  </section>
 
   <script>
     const input = document.querySelector("[data-post-command-input]");
     const form = document.querySelector("[data-post-command-form]");
     const content = document.querySelector("[data-post-content]");
+    const readerFrame = document.querySelector("[data-reader-frame]");
     const normalCommandView = document.querySelector("[data-normal-command-view]");
     let inputMode = "normal";
     let focusPane = "output";
     let outputCursorIndex = 0;
     let outputCursorColumn = 0;
     let focusTimer;
+    let visualAnchor = null;
+    let visualFocus = null;
 
     function scrollByLines(lines) {
-      window.scrollBy({
+      readerFrame.scrollBy({
         top: lines * 36,
         behavior: "smooth",
       });
     }
 
     function setInputMode(nextMode, options = {}) {
+      if (nextMode !== "visual") {
+        clearVisualSelection();
+      }
       inputMode = nextMode;
       document.body.dataset.inputMode = nextMode;
 
@@ -90,9 +100,9 @@ const { Content } = await render(post);
       document.body.dataset.inputMode = "normal";
       focusPane = "output";
       document.body.dataset.focusPane = focusPane;
-      content.focus();
+      readerFrame.focus();
       setOutputCursor(outputCursorIndex);
-      flashFocusRing(content);
+      flashFocusRing(readerFrame);
     }
 
     function focusInput(options = {}) {
@@ -213,7 +223,7 @@ const { Content } = await render(post);
 
     function flashFocusRing(element) {
       clearTimeout(focusTimer);
-      content.classList.remove("focus-ring");
+      readerFrame.classList.remove("focus-ring");
       form.classList.remove("focus-ring");
       element.classList.add("focus-ring");
       focusTimer = setTimeout(() => {
@@ -228,6 +238,20 @@ const { Content } = await render(post);
     function renderCommandCursor() {
       const position = input.selectionStart ?? input.value.length;
       const value = input.value;
+      if (inputMode === "visual" && visualAnchor?.pane === "input") {
+        const { start, end } = getInputVisualRange();
+        const selected = value.slice(start, end);
+        const selection = document.createElement("span");
+        selection.className = "visual-selection";
+        selection.textContent = selected || " ";
+        normalCommandView.replaceChildren(
+          document.createTextNode(value.slice(0, start)),
+          selection,
+          document.createTextNode(value.slice(end)),
+        );
+        return;
+      }
+
       const hasCharacter = position < value.length;
       const before = value.slice(0, position);
       const cell = hasCharacter ? value[position] : " ";
@@ -237,6 +261,191 @@ const { Content } = await render(post);
         createCursorCell(cell, !hasCharacter),
         document.createTextNode(after),
       );
+    }
+
+    function startVisualSelection() {
+      clearVisualSelection();
+      inputMode = "visual";
+      document.body.dataset.inputMode = "visual";
+
+      if (focusPane === "output") {
+        clearOutputCursor();
+        visualAnchor = {
+          pane: "output",
+          index: outputCursorIndex,
+          column: outputCursorColumn,
+        };
+        visualFocus = { ...visualAnchor };
+        readerFrame.focus();
+      } else {
+        const column = input.selectionStart ?? input.value.length;
+        visualAnchor = { pane: "input", column };
+        visualFocus = { ...visualAnchor };
+        input.focus();
+      }
+
+      renderVisualSelection();
+    }
+
+    function clearVisualSelection() {
+      for (const element of content.querySelectorAll(".visual-line-selection")) {
+        element.classList.remove("visual-line-selection");
+      }
+      visualAnchor = null;
+      visualFocus = null;
+    }
+
+    function exitVisualSelection() {
+      const pane = visualAnchor?.pane;
+      clearVisualSelection();
+      inputMode = "normal";
+      document.body.dataset.inputMode = "normal";
+
+      if (pane === "output") {
+        focusPane = "output";
+        document.body.dataset.focusPane = focusPane;
+        readerFrame.focus();
+        setOutputCursor(outputCursorIndex);
+      } else {
+        focusPane = "input";
+        document.body.dataset.focusPane = focusPane;
+        input.focus();
+        updateCursorView();
+      }
+    }
+
+    function extendVisualSelection(key) {
+      if (!visualAnchor || !visualFocus) {
+        return;
+      }
+
+      if (visualAnchor.pane === "output") {
+        const targets = getOutputCursorTargets();
+        if (targets.length === 0) {
+          return;
+        }
+        if (key === "j" || key === "k") {
+          const delta = key === "j" ? 1 : -1;
+          visualFocus.index = Math.max(
+            0,
+            Math.min(targets.length - 1, visualFocus.index + delta),
+          );
+          outputCursorIndex = visualFocus.index;
+          visualFocus.column = Math.min(
+            visualFocus.column,
+            getTextLength(targets[visualFocus.index]),
+          );
+          outputCursorColumn = visualFocus.column;
+          targets[visualFocus.index]?.scrollIntoView({ block: "nearest" });
+        } else if (key === "h" || key === "l") {
+          const delta = key === "l" ? 1 : -1;
+          const target = targets[visualFocus.index];
+          if (!target) {
+            return;
+          }
+          visualFocus.column = Math.max(
+            0,
+            Math.min(getTextLength(target), visualFocus.column + delta),
+          );
+          outputCursorColumn = visualFocus.column;
+        }
+      } else if (key === "h" || key === "l") {
+        const delta = key === "l" ? 1 : -1;
+        visualFocus.column = Math.max(
+          0,
+          Math.min(input.value.length, visualFocus.column + delta),
+        );
+        input.setSelectionRange(visualFocus.column, visualFocus.column);
+      }
+
+      renderVisualSelection();
+    }
+
+    function renderVisualSelection() {
+      for (const element of content.querySelectorAll(".visual-line-selection")) {
+        element.classList.remove("visual-line-selection");
+      }
+
+      if (!visualAnchor || !visualFocus) {
+        return;
+      }
+
+      if (visualAnchor.pane === "output") {
+        const targets = getOutputCursorTargets();
+        const start = Math.min(visualAnchor.index, visualFocus.index);
+        const end = Math.max(visualAnchor.index, visualFocus.index);
+        for (let index = start; index <= end; index += 1) {
+          targets[index]?.classList.add("visual-line-selection");
+        }
+      } else {
+        renderCommandCursor();
+      }
+    }
+
+    function getInputVisualRange() {
+      const anchor = visualAnchor?.column ?? 0;
+      const focus = visualFocus?.column ?? anchor;
+      const start = Math.min(anchor, focus);
+      const end = Math.min(input.value.length, Math.max(anchor, focus) + 1);
+      return { start, end };
+    }
+
+    function getVisualSelectionText() {
+      if (!visualAnchor || !visualFocus) {
+        return "";
+      }
+
+      if (visualAnchor.pane === "output") {
+        const targets = getOutputCursorTargets();
+        const start = Math.min(visualAnchor.index, visualFocus.index);
+        const end = Math.max(visualAnchor.index, visualFocus.index);
+        return targets
+          .slice(start, end + 1)
+          .map((element) => element.textContent)
+          .join("\n");
+      }
+
+      const { start, end } = getInputVisualRange();
+      return input.value.slice(start, end);
+    }
+
+    function copyVisualSelection() {
+      const text = getVisualSelectionText();
+      if (text && navigator.clipboard) {
+        navigator.clipboard.writeText(text);
+      }
+      exitVisualSelection();
+      return text;
+    }
+
+    function deleteVisualSelection() {
+      if (visualAnchor?.pane !== "input") {
+        exitVisualSelection();
+        return "";
+      }
+
+      const { start, end } = getInputVisualRange();
+      const removed = input.value.slice(start, end);
+      input.value = `${input.value.slice(0, start)}${input.value.slice(end)}`;
+      input.setSelectionRange(start, start);
+      exitVisualSelection();
+      return removed;
+    }
+
+    function changeVisualSelection() {
+      const text = getVisualSelectionText();
+      if (text && navigator.clipboard) {
+        navigator.clipboard.writeText(text);
+      }
+
+      if (visualAnchor?.pane === "input") {
+        deleteVisualSelection();
+        setInputMode("insert");
+      } else {
+        exitVisualSelection();
+      }
+
+      return text;
     }
 
     function activateFocusedLink() {
@@ -271,9 +480,9 @@ const { Content } = await render(post);
     input.addEventListener("input", updateCursorView);
     input.addEventListener("click", updateCursorView);
     input.addEventListener("keyup", updateCursorView);
-    content.addEventListener("keydown", handleKeyboard);
+    readerFrame.addEventListener("keydown", handleKeyboard);
     document.addEventListener("keydown", (event) => {
-      if (event.target === input || event.target === content) {
+      if (event.target === input || event.target === readerFrame || content.contains(event.target)) {
         return;
       }
 
@@ -295,6 +504,10 @@ const { Content } = await render(post);
 
       if (event.key === "Escape") {
         event.preventDefault();
+        if (inputMode === "visual") {
+          exitVisualSelection();
+          return;
+        }
         setInputMode("normal");
         return;
       }
@@ -307,6 +520,40 @@ const { Content } = await render(post);
       }
 
       if (inputMode === "insert") {
+        return;
+      }
+
+      if (inputMode === "visual") {
+        if (["h", "j", "k", "l"].includes(event.key)) {
+          event.preventDefault();
+          extendVisualSelection(event.key);
+          return;
+        }
+
+        if (event.key === "y") {
+          event.preventDefault();
+          copyVisualSelection();
+          return;
+        }
+
+        if (event.key === "c") {
+          event.preventDefault();
+          changeVisualSelection();
+          return;
+        }
+
+        if (event.key === "d") {
+          event.preventDefault();
+          deleteVisualSelection();
+          return;
+        }
+
+        return;
+      }
+
+      if (event.key === "v") {
+        event.preventDefault();
+        startVisualSelection();
         return;
       }
 
@@ -375,14 +622,14 @@ const { Content } = await render(post);
         if (focusPane === "output") {
           setOutputCursor(0);
         } else {
-          window.scrollTo({ top: 0, behavior: "smooth" });
+          readerFrame.scrollTo({ top: 0, behavior: "smooth" });
         }
       } else if (event.key === "G") {
         event.preventDefault();
         if (focusPane === "output") {
           setOutputCursor(getOutputCursorTargets().length - 1);
         } else {
-          window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+          readerFrame.scrollTo({ top: readerFrame.scrollHeight, behavior: "smooth" });
         }
       }
     }
