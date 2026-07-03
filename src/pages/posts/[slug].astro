@@ -1,0 +1,372 @@
+---
+import { getCollection, render } from "astro:content";
+
+import { formatDate } from "../../lib/content.mjs";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("posts", ({ data }) => {
+    return import.meta.env.PROD ? data.draft !== true : true;
+  });
+
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<BaseLayout title={post.data.title} description={post.data.excerpt}>
+  <article class="article article-with-shell" data-post-content tabindex="0">
+    <header>
+      <p class="command-label">~/blog $ open {post.id}</p>
+      <h1>{post.data.title}</h1>
+      <p class="meta">
+        <time datetime={formatDate(post.data.date)}>{formatDate(post.data.date)}</time>
+      </p>
+      <p class="tag-cloud">
+        {
+          post.data.tags.map((tag) => (
+            <span class="tag">{tag}</span>
+          ))
+        }
+      </p>
+    </header>
+
+    <Content />
+    <p class="reader-hint">:q to shell | Esc normal | i/a insert | j/k scroll | g/G top/bottom</p>
+  </article>
+
+  <form class="terminal-input post-command" data-post-command-form>
+    <span class="prompt" data-post-prompt>~/blog/posts/{post.id}.md ></span>
+    <span class="command-entry">
+      <span class="normal-command-view" data-normal-command-view aria-hidden="true"></span>
+      <input
+        data-post-command-input
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="Post command input"
+      />
+    </span>
+  </form>
+
+  <script>
+    const input = document.querySelector("[data-post-command-input]");
+    const form = document.querySelector("[data-post-command-form]");
+    const content = document.querySelector("[data-post-content]");
+    const normalCommandView = document.querySelector("[data-normal-command-view]");
+    let inputMode = "normal";
+    let focusPane = "output";
+    let outputCursorIndex = 0;
+    let outputCursorColumn = 0;
+    let focusTimer;
+
+    function scrollByLines(lines) {
+      window.scrollBy({
+        top: lines * 36,
+        behavior: "smooth",
+      });
+    }
+
+    function setInputMode(nextMode, options = {}) {
+      inputMode = nextMode;
+      document.body.dataset.inputMode = nextMode;
+
+      input.focus();
+      focusPane = "input";
+      document.body.dataset.focusPane = focusPane;
+      clearOutputCursor();
+      if (options.append) {
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
+      updateCursorView();
+    }
+
+    function focusOutput() {
+      inputMode = "normal";
+      document.body.dataset.inputMode = "normal";
+      focusPane = "output";
+      document.body.dataset.focusPane = focusPane;
+      content.focus();
+      setOutputCursor(outputCursorIndex);
+      flashFocusRing(content);
+    }
+
+    function focusInput(options = {}) {
+      setInputMode("insert", options);
+      flashFocusRing(form);
+    }
+
+    function moveCursor(delta) {
+      const position = input.selectionStart ?? input.value.length;
+      const next = Math.max(0, Math.min(input.value.length, position + delta));
+      input.setSelectionRange(next, next);
+      input.focus();
+      updateCursorView();
+    }
+
+    function getOutputCursorTargets() {
+      return [...content.querySelectorAll("h1, h2, h3, p, li, pre, blockquote")];
+    }
+
+    function clearOutputCursor() {
+      clearTextNodeCursor(content);
+      for (const element of content.querySelectorAll(".view-cursor-line")) {
+        element.classList.remove("view-cursor-line");
+      }
+    }
+
+    function setOutputCursor(index) {
+      const targets = getOutputCursorTargets();
+      if (targets.length === 0) {
+        return;
+      }
+
+      outputCursorIndex = Math.max(0, Math.min(targets.length - 1, index));
+      clearOutputCursor();
+      const target = targets[outputCursorIndex];
+      target.classList.add("view-cursor-line");
+      outputCursorColumn = Math.min(outputCursorColumn, getTextLength(target));
+      renderTextNodeCursor(target, outputCursorColumn);
+      target.scrollIntoView({ block: "nearest" });
+    }
+
+    function moveOutputCursor(delta) {
+      setOutputCursor(outputCursorIndex + delta);
+    }
+
+    function moveOutputCursorColumn(delta) {
+      const targets = getOutputCursorTargets();
+      const target = targets[outputCursorIndex];
+      if (!target) {
+        return;
+      }
+
+      outputCursorColumn = Math.max(
+        0,
+        Math.min(getTextLength(target), outputCursorColumn + delta),
+      );
+      clearTextNodeCursor(target);
+      renderTextNodeCursor(target, outputCursorColumn);
+    }
+
+    function renderTextNodeCursor(target, column) {
+      const walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT);
+      let remaining = column;
+      let node = walker.nextNode();
+
+      while (node) {
+        const value = node.nodeValue ?? "";
+        if (remaining <= value.length) {
+          const hasCharacter = remaining < value.length;
+          const before = value.slice(0, remaining);
+          const cell = hasCharacter ? value[remaining] : " ";
+          const after = hasCharacter ? value.slice(remaining + 1) : "";
+          const fragment = document.createDocumentFragment();
+
+          if (before) {
+            fragment.append(document.createTextNode(before));
+          }
+          fragment.append(createCursorCell(cell, !hasCharacter));
+          if (after) {
+            fragment.append(document.createTextNode(after));
+          }
+
+          node.replaceWith(fragment);
+          return;
+        }
+
+        remaining -= value.length;
+        node = walker.nextNode();
+      }
+
+      target.append(createCursorCell(" ", true));
+    }
+
+    function clearTextNodeCursor(root) {
+      for (const cursor of root.querySelectorAll(".view-cursor-cell")) {
+        const replacement = cursor.dataset.placeholder === "true"
+          ? ""
+          : cursor.textContent;
+        cursor.replaceWith(document.createTextNode(replacement));
+      }
+      root.normalize();
+    }
+
+    function createCursorCell(text, placeholder = false) {
+      const span = document.createElement("span");
+      span.className = "view-cursor-cell";
+      span.textContent = text;
+      if (placeholder) {
+        span.dataset.placeholder = "true";
+      }
+      return span;
+    }
+
+    function getTextLength(element) {
+      clearTextNodeCursor(element);
+      return element.textContent.length;
+    }
+
+    function flashFocusRing(element) {
+      clearTimeout(focusTimer);
+      content.classList.remove("focus-ring");
+      form.classList.remove("focus-ring");
+      element.classList.add("focus-ring");
+      focusTimer = setTimeout(() => {
+        element.classList.remove("focus-ring");
+      }, 1400);
+    }
+
+    function updateCursorView() {
+      renderCommandCursor();
+    }
+
+    function renderCommandCursor() {
+      const position = input.selectionStart ?? input.value.length;
+      const value = input.value;
+      const hasCharacter = position < value.length;
+      const before = value.slice(0, position);
+      const cell = hasCharacter ? value[position] : " ";
+      const after = hasCharacter ? value.slice(position + 1) : "";
+      normalCommandView.replaceChildren(
+        document.createTextNode(before),
+        createCursorCell(cell, !hasCharacter),
+        document.createTextNode(after),
+      );
+    }
+
+    function run(command) {
+      if (command === ":q" || command === "q") {
+        window.location.href = "/";
+      }
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      run(input.value.trim());
+      input.value = "";
+      setInputMode("insert");
+    });
+
+    input.addEventListener("keydown", handleKeyboard);
+    input.addEventListener("input", updateCursorView);
+    input.addEventListener("click", updateCursorView);
+    input.addEventListener("keyup", updateCursorView);
+    content.addEventListener("keydown", handleKeyboard);
+    document.addEventListener("keydown", (event) => {
+      if (event.target === input || event.target === content) {
+        return;
+      }
+
+      handleKeyboard(event);
+    });
+
+    function handleKeyboard(event) {
+      if (event.ctrlKey && event.key === "j") {
+        event.preventDefault();
+        focusInput();
+        return;
+      }
+
+      if (event.ctrlKey && event.key === "k") {
+        event.preventDefault();
+        focusOutput();
+        return;
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setInputMode("normal");
+        return;
+      }
+
+      if (event.key === "Tab") {
+        event.preventDefault();
+        input.value = ":q";
+        setInputMode("insert", { append: true });
+        return;
+      }
+
+      if (inputMode === "insert") {
+        return;
+      }
+
+      if (event.key === "i") {
+        event.preventDefault();
+        focusInput({ append: false });
+        return;
+      }
+
+      if (event.key === "a") {
+        event.preventDefault();
+        moveCursor(1);
+        focusInput({ append: true });
+        return;
+      }
+
+      if (event.key === ":") {
+        event.preventDefault();
+        input.value = ":";
+        setInputMode("insert", { append: true });
+        return;
+      }
+
+      if (event.key === "h") {
+        event.preventDefault();
+        if (focusPane === "output") {
+          moveOutputCursorColumn(-1);
+          return;
+        }
+        moveCursor(-1);
+        return;
+      }
+
+      if (event.key === "l") {
+        event.preventDefault();
+        if (focusPane === "output") {
+          moveOutputCursorColumn(1);
+          return;
+        }
+        moveCursor(1);
+        return;
+      }
+
+      if (event.key === "j") {
+        event.preventDefault();
+        if (focusPane === "output") {
+          moveOutputCursor(1);
+        } else {
+          scrollByLines(1);
+        }
+      } else if (event.key === "k") {
+        event.preventDefault();
+        if (focusPane === "output") {
+          moveOutputCursor(-1);
+        } else {
+          scrollByLines(-1);
+        }
+      } else if (event.key === "g") {
+        event.preventDefault();
+        if (focusPane === "output") {
+          setOutputCursor(0);
+        } else {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      } else if (event.key === "G") {
+        event.preventDefault();
+        if (focusPane === "output") {
+          setOutputCursor(getOutputCursorTargets().length - 1);
+        } else {
+          window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+        }
+      }
+    }
+
+    setInputMode("normal");
+    focusOutput();
+  </script>
+</BaseLayout>

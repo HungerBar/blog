@@ -1,0 +1,29 @@
+---
+import "../styles/global.css";
+
+const {
+  title = "Blog",
+  description = "A minimal personal blog.",
+  section = "shell",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="tmux-bar" aria-label="Session status">
+      <span>[blog]</span>
+      <span>0:{section}</span>
+      <span class="tmux-right">ready</span>
+    </header>
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>
