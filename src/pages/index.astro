@@ -54,11 +54,13 @@ const latestDate = shellPosts[0]?.date ?? "";
 
     <div class="terminal-output" data-output tabindex="0"></div>
 
-    <p class="home-actions">
-      <a class="resume-link" href="/resume/">resume</a>
-    </p>
+    <div class="shell-hints">
+      <p class="home-actions">
+        <a class="resume-link" href="/resume/">resume</a>
+      </p>
 
-    <p class="help-hint" data-help-hint>type `help` to list commands</p>
+      <p class="help-hint" data-help-hint>type `help` to list commands</p>
+    </div>
 
     <form class="terminal-input" data-command-form>
       <span class="prompt" data-prompt>~/blog $</span>

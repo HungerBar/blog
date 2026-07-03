@@ -119,10 +119,15 @@ h2 {
   place-items: center;
 }
 
+.shell-hints {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding-bottom: 48px;
+}
+
 .home-actions {
-  margin: 0 0 12px;
-  text-align: center;
-  transform: translateY(-48px);
+  margin: 0;
 }
 
 .pixel-logo {

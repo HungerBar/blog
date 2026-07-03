@@ -14,16 +14,19 @@ test("home page exposes a small resume button", () => {
   assert.equal(homePage.includes('class="resume-link"'), true);
   assert.equal(homePage.includes('href="/resume/"'), true);
   assert.equal(homePage.includes("resume"), true);
+  assert.equal(homePage.includes('class="shell-hints"'), true);
   assert.equal(homePage.indexOf('class="terminal-output"') < homePage.indexOf('class="resume-link"'), true);
   assert.equal(homePage.indexOf('class="resume-link"') < homePage.indexOf("type `help` to list commands"), true);
-  assert.equal(styles.includes(".home-actions"), true);
+  assert.equal(styles.includes(".shell-hints"), true);
   assert.equal(styles.includes(".resume-link"), true);
   assert.equal(styles.includes("color: var(--accent)"), true);
   assert.equal(styles.includes("font-size: 1.1rem"), true);
   assert.equal(styles.includes("font-weight: 700"), true);
-  assert.equal(styles.includes("margin: 0 0 12px"), true);
-  assert.equal(styles.includes("text-align: center"), true);
-  assert.equal(styles.includes("transform: translateY(-6px)"), true);
+  assert.equal(styles.includes("justify-items: center"), true);
+  assert.equal(styles.includes("gap: 12px"), true);
+  assert.equal(styles.includes("padding-bottom: 48px"), true);
+  assert.equal(styles.includes("transform: translateY(-48px)"), false);
+  assert.equal(styles.includes("transform: translateY(-6px)"), false);
 });
 
 test("home shell opens resume by command", () => {
