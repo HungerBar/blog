@@ -102,9 +102,10 @@ h2 {
 
 .resume-link {
   border: 1px solid var(--line);
-  padding: 2px 8px;
+  padding: 4px 12px;
   color: var(--accent);
-  font-size: 0.85rem;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
 .resume-link:hover {
@@ -119,7 +120,7 @@ h2 {
 }
 
 .home-actions {
-  margin: 14px 0 0;
+  margin: 56px 0 0;
 }
 
 .pixel-logo {
@@ -359,10 +360,6 @@ body[data-input-mode="visual"] .terminal-input {
 .resume-return {
   display: inline-block;
   margin-bottom: 24px;
-  border: 1px solid var(--line);
-  padding: 2px 8px;
-  color: var(--muted);
-  font-size: 0.85rem;
 }
 
 .resume-return:hover {

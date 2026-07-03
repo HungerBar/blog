@@ -18,6 +18,9 @@ test("home page exposes a small resume button", () => {
   assert.equal(styles.includes(".home-actions"), true);
   assert.equal(styles.includes(".resume-link"), true);
   assert.equal(styles.includes("color: var(--accent)"), true);
+  assert.equal(styles.includes("font-size: 1.1rem"), true);
+  assert.equal(styles.includes("font-weight: 700"), true);
+  assert.equal(styles.includes("margin: 56px 0 0"), true);
 });
 
 test("home shell opens resume by command", () => {
@@ -30,16 +33,19 @@ test("home shell opens resume by command", () => {
 
 test("resume page has a blog return button and shell quit command", () => {
   const resumePage = readFileSync("src/pages/resume.astro", "utf8");
+  const styles = readFileSync("src/styles/global.css", "utf8");
 
-  assert.equal(resumePage.includes('class="resume-return"'), true);
+  assert.equal(resumePage.includes('class="resume-link resume-return"'), true);
   assert.equal(resumePage.includes('href="/"'), true);
   assert.equal(resumePage.includes("← blog"), true);
+  assert.equal(resumePage.includes("~/blog $ open resume"), false);
   assert.equal(resumePage.includes("<h2>教育经历</h2>"), true);
   assert.equal(resumePage.includes("<h2>项目</h2>"), true);
   assert.equal(resumePage.includes('data-resume-command-form'), true);
   assert.equal(resumePage.includes('data-resume-command-input'), true);
   assert.equal(resumePage.includes('command === ":q"'), true);
   assert.equal(resumePage.includes("window.location.href = \"/\""), true);
+  assert.equal(styles.includes(".resume-return"), true);
 });
 
 test("post pages render tags as text only", () => {
