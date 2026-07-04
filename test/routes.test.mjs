@@ -46,10 +46,14 @@ test("resume page has a blog return button and shell quit command", () => {
   assert.equal(resumePage.includes('href="/"'), true);
   assert.equal(resumePage.includes("← blog"), true);
   assert.equal(resumePage.includes("~/blog $ open resume"), false);
+  assert.equal(resumePage.includes("~/blog/resume.md $"), true);
+  assert.equal(resumePage.includes("~/blog/resume.md >"), false);
   assert.equal(resumePage.includes("<h2>教育经历</h2>"), true);
   assert.equal(resumePage.includes("<h2>项目</h2>"), true);
   assert.equal(resumePage.includes('data-resume-command-form'), true);
   assert.equal(resumePage.includes('data-resume-command-input'), true);
+  assert.equal(resumePage.includes('setInputMode("insert")'), true);
+  assert.equal(resumePage.includes("updateCursorView();\n    resumeFrame.focus();"), false);
   assert.equal(resumePage.includes('command === ":q"'), true);
   assert.equal(resumePage.includes("window.location.href = \"/\""), true);
   assert.equal(styles.includes(".resume-return"), true);
@@ -71,7 +75,8 @@ test("post pages expose a bottom shell with vim-style navigation", () => {
   assert.equal(postPage.includes("data-post-command-form"), true);
   assert.equal(postPage.includes("data-post-command-input"), true);
   assert.equal(postPage.includes("data-post-prompt"), true);
-  assert.equal(postPage.includes("~/blog/posts/{post.id}.md >"), true);
+  assert.equal(postPage.includes("~/blog/posts/{post.id}.md $"), true);
+  assert.equal(postPage.includes("~/blog/posts/{post.id}.md >"), false);
   assert.equal(postPage.includes("post-command"), true);
   assert.equal(postPage.includes("reader-hint"), false);
   assert.equal(postPage.includes('command === ":q"'), true);
@@ -201,6 +206,8 @@ test("post shell supports normal and insert keyboard modes", () => {
   const postPage = readFileSync("src/pages/posts/[slug].astro", "utf8");
 
   assert.equal(postPage.includes("setInputMode"), true);
+  assert.equal(postPage.includes('setInputMode("insert")'), true);
+  assert.equal(postPage.includes('setInputMode("normal");\n    focusOutput();'), false);
   assert.equal(postPage.includes('event.key === "Escape"'), true);
   assert.equal(postPage.includes('event.key === "i"'), true);
   assert.equal(postPage.includes('event.key === "a"'), true);
@@ -208,6 +215,35 @@ test("post shell supports normal and insert keyboard modes", () => {
   assert.equal(postPage.includes('event.key === "l"'), true);
   assert.equal(postPage.includes('event.ctrlKey && event.key === "j"'), true);
   assert.equal(postPage.includes('event.ctrlKey && event.key === "k"'), true);
+});
+
+test("shell prompts expose vim mode status", () => {
+  const homePage = readFileSync("src/pages/index.astro", "utf8");
+  const postPage = readFileSync("src/pages/posts/[slug].astro", "utf8");
+  const resumePage = readFileSync("src/pages/resume.astro", "utf8");
+  const styles = readFileSync("src/styles/global.css", "utf8");
+
+  for (const page of [homePage, postPage, resumePage]) {
+    assert.equal(page.includes('class="mode-indicator"'), true);
+    assert.equal(page.includes("data-mode-indicator"), true);
+    assert.equal(page.includes("updateModeIndicator"), true);
+    assert.equal(page.includes("modeIndicator.textContent"), true);
+  }
+  assert.equal(homePage.includes("[INSERT]"), true);
+  assert.equal(postPage.includes("[INSERT]"), true);
+  assert.equal(resumePage.includes("[INSERT]"), true);
+  assert.equal(styles.includes(".mode-indicator"), true);
+});
+
+test("shell insert mode recovers focus when i is pressed outside input", () => {
+  const homePage = readFileSync("src/pages/index.astro", "utf8");
+  const postPage = readFileSync("src/pages/posts/[slug].astro", "utf8");
+  const resumePage = readFileSync("src/pages/resume.astro", "utf8");
+
+  for (const page of [homePage, postPage, resumePage]) {
+    assert.equal(page.includes('inputMode === "insert" && document.activeElement !== input'), true);
+    assert.equal(page.includes("focusInput({ append: true })"), true);
+  }
 });
 
 test("post reader supports visual selection and copying from content", () => {

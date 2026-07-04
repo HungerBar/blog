@@ -43,7 +43,8 @@ const { Content } = await render(post);
     </div>
 
     <form class="terminal-input post-command" data-post-command-form>
-      <span class="prompt" data-post-prompt>~/blog/posts/{post.id}.md ></span>
+      <span class="prompt" data-post-prompt>~/blog/posts/{post.id}.md $</span>
+      <span class="mode-indicator" data-mode-indicator>[INSERT]</span>
       <span class="command-entry">
         <span class="normal-command-view" data-normal-command-view aria-hidden="true"></span>
         <input
@@ -61,9 +62,10 @@ const { Content } = await render(post);
     const form = document.querySelector("[data-post-command-form]");
     const content = document.querySelector("[data-post-content]");
     const readerFrame = document.querySelector("[data-reader-frame]");
+    const modeIndicator = document.querySelector("[data-mode-indicator]");
     const normalCommandView = document.querySelector("[data-normal-command-view]");
-    let inputMode = "normal";
-    let focusPane = "output";
+    let inputMode = "insert";
+    let focusPane = "input";
     let outputCursorIndex = 0;
     let outputCursorColumn = 0;
     let focusTimer;
@@ -77,12 +79,19 @@ const { Content } = await render(post);
       });
     }
 
+    function updateModeIndicator() {
+      if (modeIndicator) {
+        modeIndicator.textContent = `[${inputMode.toUpperCase()}]`;
+      }
+    }
+
     function setInputMode(nextMode, options = {}) {
       if (nextMode !== "visual") {
         clearVisualSelection();
       }
       inputMode = nextMode;
       document.body.dataset.inputMode = nextMode;
+      updateModeIndicator();
 
       input.focus();
       focusPane = "input";
@@ -97,6 +106,7 @@ const { Content } = await render(post);
     function focusOutput() {
       inputMode = "normal";
       document.body.dataset.inputMode = "normal";
+      updateModeIndicator();
       focusPane = "output";
       document.body.dataset.focusPane = focusPane;
       readerFrame.focus();
@@ -266,6 +276,7 @@ const { Content } = await render(post);
       clearVisualSelection();
       inputMode = "visual";
       document.body.dataset.inputMode = "visual";
+      updateModeIndicator();
 
       if (focusPane === "output") {
         clearOutputCursor();
@@ -297,6 +308,7 @@ const { Content } = await render(post);
       clearVisualSelection();
       inputMode = "normal";
       document.body.dataset.inputMode = "normal";
+      updateModeIndicator();
 
       if (pane === "output") {
         focusPane = "output";
@@ -557,6 +569,14 @@ const { Content } = await render(post);
         return;
       }
 
+      if (inputMode === "insert" && document.activeElement !== input) {
+        if (event.key === "i") {
+          event.preventDefault();
+          focusInput({ append: true });
+          return;
+        }
+      }
+
       if (inputMode === "insert") {
         return;
       }
@@ -672,7 +692,6 @@ const { Content } = await render(post);
       }
     }
 
-    setInputMode("normal");
-    focusOutput();
+    setInputMode("insert");
   </script>
 </BaseLayout>

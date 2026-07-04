@@ -23,7 +23,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     </div>
 
     <form class="terminal-input post-command" data-resume-command-form>
-      <span class="prompt" data-resume-prompt>~/blog/resume.md ></span>
+      <span class="prompt" data-resume-prompt>~/blog/resume.md $</span>
+      <span class="mode-indicator" data-mode-indicator>[INSERT]</span>
       <span class="command-entry">
         <span class="normal-command-view" data-normal-command-view aria-hidden="true"></span>
         <input
@@ -40,14 +41,22 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     const input = document.querySelector("[data-resume-command-input]");
     const form = document.querySelector("[data-resume-command-form]");
     const resumeFrame = document.querySelector("[data-resume-frame]");
+    const modeIndicator = document.querySelector("[data-mode-indicator]");
     const normalCommandView = document.querySelector("[data-normal-command-view]");
-    let inputMode = "normal";
-    let focusPane = "output";
+    let inputMode = "insert";
+    let focusPane = "input";
     let focusTimer;
+
+    function updateModeIndicator() {
+      if (modeIndicator) {
+        modeIndicator.textContent = `[${inputMode.toUpperCase()}]`;
+      }
+    }
 
     function setInputMode(nextMode, options = {}) {
       inputMode = nextMode;
       document.body.dataset.inputMode = nextMode;
+      updateModeIndicator();
       focusPane = "input";
       document.body.dataset.focusPane = focusPane;
       input.focus();
@@ -60,6 +69,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     function focusOutput() {
       inputMode = "normal";
       document.body.dataset.inputMode = "normal";
+      updateModeIndicator();
       focusPane = "output";
       document.body.dataset.focusPane = focusPane;
       resumeFrame.focus();
@@ -159,6 +169,14 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         return;
       }
 
+      if (inputMode === "insert" && document.activeElement !== input) {
+        if (event.key === "i") {
+          event.preventDefault();
+          focusInput({ append: true });
+          return;
+        }
+      }
+
       if (inputMode === "insert") {
         return;
       }
@@ -195,9 +213,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       }
     }
 
-    document.body.dataset.inputMode = inputMode;
-    document.body.dataset.focusPane = focusPane;
-    updateCursorView();
-    resumeFrame.focus();
+    setInputMode("insert");
   </script>
 </BaseLayout>

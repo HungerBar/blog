@@ -158,9 +158,14 @@ h2 {
 
 .terminal-line.echo,
 .prompt,
+.mode-indicator,
 .command-label {
   color: var(--text);
   font-weight: 700;
+}
+
+.mode-indicator {
+  color: var(--muted);
 }
 
 .terminal-line.accent {
