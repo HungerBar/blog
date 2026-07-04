@@ -282,6 +282,19 @@ test("insert mode preserves command cursor unless append is explicitly requested
   }
 });
 
+test("leaving insert mode places the normal command cursor like vim", () => {
+  const homePage = readFileSync("src/pages/index.astro", "utf8");
+  const postPage = readFileSync("src/pages/posts/[slug].astro", "utf8");
+  const resumePage = readFileSync("src/pages/resume.astro", "utf8");
+
+  for (const page of [homePage, postPage, resumePage]) {
+    assert.equal(page.includes("const previousMode = inputMode"), true);
+    assert.equal(page.includes('if (nextMode === "normal" && previousMode === "insert" && input.value.length > 0)'), true);
+    assert.equal(page.includes("const normalPosition = Math.max(0, Math.min(input.value.length - 1, selectionStart - 1))"), true);
+    assert.equal(page.includes("input.setSelectionRange(normalPosition, normalPosition)"), true);
+  }
+});
+
 test("post reader supports visual selection and copying from content", () => {
   const postPage = readFileSync("src/pages/posts/[slug].astro", "utf8");
 

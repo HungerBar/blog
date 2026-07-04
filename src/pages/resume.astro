@@ -54,6 +54,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     }
 
     function setInputMode(nextMode, options = {}) {
+      const previousMode = inputMode;
       const selectionStart = input.selectionStart ?? input.value.length;
       const selectionEnd = input.selectionEnd ?? selectionStart;
       inputMode = nextMode;
@@ -64,6 +65,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       input.focus();
       if (options.append) {
         input.setSelectionRange(input.value.length, input.value.length);
+      } else if (nextMode === "normal" && previousMode === "insert" && input.value.length > 0) {
+        const normalPosition = Math.max(0, Math.min(input.value.length - 1, selectionStart - 1));
+        input.setSelectionRange(normalPosition, normalPosition);
       } else {
         input.setSelectionRange(selectionStart, selectionEnd);
       }
