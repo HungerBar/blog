@@ -622,8 +622,12 @@ const { Content } = await render(post);
       }
 
       if (event.key === "i") {
-        event.preventDefault();
-        focusInput({ append: false });
+        if (focusPane === "input" && document.activeElement === input) {
+          setInputMode("insert", { append: false });
+        } else {
+          event.preventDefault();
+          focusInput({ append: false });
+        }
         return;
       }
 
