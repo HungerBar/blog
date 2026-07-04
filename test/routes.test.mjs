@@ -116,6 +116,11 @@ test("home shell supports normal and insert keyboard modes", () => {
   assert.equal(homePage.includes('event.key === "l"'), true);
   assert.equal(homePage.includes('event.ctrlKey && event.key === "j"'), true);
   assert.equal(homePage.includes('event.ctrlKey && event.key === "k"'), true);
+  assert.equal(homePage.includes("vim keys:"), true);
+  assert.equal(homePage.includes("i/a              enter insert mode"), true);
+  assert.equal(homePage.includes("Esc              return to normal mode"), true);
+  assert.equal(homePage.includes("v                start visual selection"), true);
+  assert.equal(homePage.includes("y/c/d            copy, change, or delete selection"), true);
 });
 
 test("home page starts with centered pixel mark and shell hint above input", () => {
@@ -126,6 +131,7 @@ test("home page starts with centered pixel mark and shell hint above input", () 
   assert.equal(homePage.includes('aria-label="Hungerbar"'), true);
   assert.equal(homePage.includes('data-help-hint'), true);
   assert.equal(homePage.includes("type `help` to list commands"), true);
+  assert.equal(homePage.includes("use `a` or `i` to enter insert mode"), true);
   assert.equal(homePage.includes('<div class="terminal-output" data-output tabindex="0"></div>'), true);
   assert.equal(homePage.includes("█"), true);
   assert.equal(homePage.includes("#   #"), false);

@@ -58,7 +58,9 @@ const latestDate = shellPosts[0]?.date ?? "";
       <a class="resume-link" href="/resume/">resume</a>
     </p>
 
-    <p class="help-hint" data-help-hint>type `help` to list commands</p>
+    <p class="help-hint" data-help-hint>
+      type `help` to list commands; use `a` or `i` to enter insert mode
+    </p>
 
     <form class="terminal-input" data-command-form>
       <span class="prompt" data-prompt>~/blog $</span>
@@ -660,6 +662,17 @@ const latestDate = shellPosts[0]?.date ?? "";
       for (const [command, description] of commands) {
         line(`  ${command.padEnd(16)} ${description}`);
       }
+      line("");
+      line("vim keys:", "accent");
+      line("  i/a              enter insert mode");
+      line("  Esc              return to normal mode");
+      line("  h/l              move the command cursor left or right");
+      line("  j/k              move through output, or scroll when input is focused");
+      line("  g/G              jump to top or bottom");
+      line("  v                start visual selection");
+      line("  y/c/d            copy, change, or delete selection");
+      line("  Enter            open the focused link");
+      line("  Ctrl+j/Ctrl+k    focus input or output");
     }
 
     function printPosts(items) {
