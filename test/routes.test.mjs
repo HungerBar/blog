@@ -167,6 +167,7 @@ test("home terminal output scrolls without pushing the bottom shell", () => {
   assert.equal(styles.includes(".terminal {\n  position: relative;\n  display: grid;"), true);
   assert.equal(styles.includes("overflow: hidden;"), true);
   assert.equal(styles.includes(".terminal-output {\n  min-height: 0;\n  height: 100%;\n  max-height: 100%;"), true);
+  assert.equal(styles.includes("padding: 10px 18px 30px"), true);
   assert.equal(styles.includes("overflow-y: auto"), true);
   assert.equal(styles.includes("overscroll-behavior: contain"), true);
   assert.equal(styles.includes("scrollbar-gutter: stable"), true);
@@ -372,7 +373,7 @@ test("styles expose block cursor in normal mode and wider reading surface", () =
   assert.equal(styles.includes("min-width: 0.72em"), true);
   assert.equal(styles.includes("width: auto"), true);
   assert.equal(styles.includes("outline-offset: 8px"), true);
-  assert.equal(styles.includes("padding-bottom: 24px"), true);
+  assert.equal(styles.includes("padding: 10px 18px 30px"), true);
 });
 
 test("styles use monochrome differentiation only", () => {
@@ -435,6 +436,8 @@ test("focus ring is transient on output and shell focus changes", () => {
   assert.equal(styles.includes(".article.focus-ring"), true);
   assert.equal(styles.includes("outline-offset: 14px"), true);
   assert.equal(styles.includes("box-shadow: 0 0 0 6px var(--bg)"), true);
+  assert.equal(styles.includes("padding: 22px 18px 14px"), true);
+  assert.equal(styles.includes("padding: 34px 18px 64px"), true);
   assert.equal(homePage.includes("function focusInput(options = {})"), true);
   assert.equal(postPage.includes("function focusInput(options = {})"), true);
   assert.equal(homePage.includes('setInputMode("insert", options)'), true);

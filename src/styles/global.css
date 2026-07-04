@@ -148,7 +148,7 @@ h2 {
   min-height: 0;
   height: 100%;
   max-height: 100%;
-  padding-bottom: 24px;
+  padding: 10px 18px 30px;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
@@ -204,7 +204,7 @@ h2 {
   align-items: baseline;
   gap: 8px;
   border-top: 1px solid var(--line);
-  padding-top: 18px;
+  padding: 22px 18px 14px;
   outline: none;
   outline-offset: 8px;
 }
@@ -288,7 +288,7 @@ body[data-input-mode="visual"] .terminal-input {
 
 .page,
 .article {
-  padding: 34px 0 64px;
+  padding: 34px 18px 64px;
   overflow: visible;
 }
 
@@ -411,7 +411,7 @@ body[data-input-mode="visual"] .terminal-input {
 }
 
 .post-command {
-  padding: 18px 0 0;
+  padding: 22px 18px 14px;
   background: var(--bg);
 }
 
