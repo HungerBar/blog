@@ -252,8 +252,10 @@ test("typing i in input normal mode enters insert without swallowing the key", (
   const resumePage = readFileSync("src/pages/resume.astro", "utf8");
 
   for (const page of [homePage, postPage, resumePage]) {
+    assert.equal(page.includes("function insertInputText(text)"), true);
     assert.equal(page.includes('focusPane === "input" && document.activeElement === input'), true);
     assert.equal(page.includes('setInputMode("insert", { append: false });'), true);
+    assert.equal(page.includes('insertInputText(event.key)'), true);
   }
 });
 

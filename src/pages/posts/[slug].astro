@@ -119,6 +119,15 @@ const { Content } = await render(post);
       flashFocusRing(form);
     }
 
+    function insertInputText(text) {
+      const start = input.selectionStart ?? input.value.length;
+      const end = input.selectionEnd ?? start;
+      input.value = `${input.value.slice(0, start)}${text}${input.value.slice(end)}`;
+      const next = start + text.length;
+      input.setSelectionRange(next, next);
+      updateCursorView();
+    }
+
     function moveCursor(delta) {
       const position = input.selectionStart ?? input.value.length;
       const next = Math.max(0, Math.min(input.value.length, position + delta));
@@ -623,7 +632,9 @@ const { Content } = await render(post);
 
       if (event.key === "i") {
         if (focusPane === "input" && document.activeElement === input) {
+          event.preventDefault();
           setInputMode("insert", { append: false });
+          insertInputText(event.key);
         } else {
           event.preventDefault();
           focusInput({ append: false });
