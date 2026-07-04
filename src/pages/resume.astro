@@ -59,6 +59,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       const selectionEnd = input.selectionEnd ?? selectionStart;
       inputMode = nextMode;
       document.body.dataset.inputMode = nextMode;
+      input.readOnly = nextMode !== "insert";
       updateModeIndicator();
       focusPane = "input";
       document.body.dataset.focusPane = focusPane;
@@ -77,6 +78,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     function focusOutput() {
       inputMode = "normal";
       document.body.dataset.inputMode = "normal";
+      input.readOnly = true;
       updateModeIndicator();
       focusPane = "output";
       document.body.dataset.focusPane = focusPane;
@@ -154,6 +156,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     });
 
     input.addEventListener("keydown", handleKeyboard);
+    input.addEventListener("beforeinput", preventInputEditOutsideInsert);
     input.addEventListener("input", updateCursorView);
     input.addEventListener("click", updateCursorView);
     input.addEventListener("keyup", updateCursorView);
@@ -168,6 +171,12 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
     function suppressPrintableNormalInput(event) {
       if (event.key.length === 1 && !event.metaKey && !event.altKey && !event.ctrlKey) {
+        event.preventDefault();
+      }
+    }
+
+    function preventInputEditOutsideInsert(event) {
+      if (inputMode !== "insert") {
         event.preventDefault();
       }
     }

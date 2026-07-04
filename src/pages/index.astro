@@ -226,6 +226,7 @@ const latestDate = shellPosts[0]?.date ?? "";
       }
       inputMode = nextMode;
       document.body.dataset.inputMode = nextMode;
+      input.readOnly = nextMode !== "insert";
       updateModeIndicator();
 
       input.focus();
@@ -246,6 +247,7 @@ const latestDate = shellPosts[0]?.date ?? "";
     function focusOutput() {
       inputMode = "normal";
       document.body.dataset.inputMode = "normal";
+      input.readOnly = true;
       updateModeIndicator();
       focusPane = "output";
       document.body.dataset.focusPane = focusPane;
@@ -437,6 +439,7 @@ const latestDate = shellPosts[0]?.date ?? "";
       clearVisualSelection();
       inputMode = "visual";
       document.body.dataset.inputMode = "visual";
+      input.readOnly = true;
       updateModeIndicator();
 
       if (focusPane === "output") {
@@ -469,6 +472,7 @@ const latestDate = shellPosts[0]?.date ?? "";
       clearVisualSelection();
       inputMode = "normal";
       document.body.dataset.inputMode = "normal";
+      input.readOnly = true;
       updateModeIndicator();
 
       if (pane === "output") {
@@ -961,6 +965,7 @@ const latestDate = shellPosts[0]?.date ?? "";
     });
 
     input.addEventListener("keydown", handleKeyboard);
+    input.addEventListener("beforeinput", preventInputEditOutsideInsert);
     input.addEventListener("input", updateCursorView);
     input.addEventListener("click", updateCursorView);
     input.addEventListener("keyup", updateCursorView);
@@ -976,6 +981,12 @@ const latestDate = shellPosts[0]?.date ?? "";
 
     function suppressPrintableNormalInput(event) {
       if (event.key.length === 1 && !event.metaKey && !event.altKey && !event.ctrlKey) {
+        event.preventDefault();
+      }
+    }
+
+    function preventInputEditOutsideInsert(event) {
+      if (inputMode !== "insert") {
         event.preventDefault();
       }
     }

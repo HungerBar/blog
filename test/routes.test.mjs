@@ -361,13 +361,17 @@ test("styles use monochrome differentiation only", () => {
 test("normal mode keeps command inputs focusable for cursor movement", () => {
   const homePage = readFileSync("src/pages/index.astro", "utf8");
   const postPage = readFileSync("src/pages/posts/[slug].astro", "utf8");
+  const resumePage = readFileSync("src/pages/resume.astro", "utf8");
 
-  assert.equal(homePage.includes("input.readOnly"), false);
-  assert.equal(postPage.includes("input.readOnly"), false);
-  assert.equal(homePage.includes("input.blur()"), false);
-  assert.equal(postPage.includes("input.blur()"), false);
-  assert.equal(homePage.includes("updateCursorView"), true);
-  assert.equal(postPage.includes("updateCursorView"), true);
+  for (const page of [homePage, postPage, resumePage]) {
+    assert.equal(page.includes("input.readOnly = nextMode !== \"insert\""), true);
+    assert.equal(page.includes("input.blur()"), false);
+    assert.equal(page.includes("updateCursorView"), true);
+  }
+
+  for (const page of [homePage, postPage]) {
+    assert.equal(page.includes("input.readOnly = true"), true);
+  }
 });
 
 test("normal and visual modes suppress unhandled printable input", () => {
@@ -380,6 +384,9 @@ test("normal and visual modes suppress unhandled printable input", () => {
     assert.equal(page.includes("event.key.length === 1"), true);
     assert.equal(page.includes("!event.metaKey && !event.altKey && !event.ctrlKey"), true);
     assert.equal(page.includes("suppressPrintableNormalInput(event);"), true);
+    assert.equal(page.includes('input.addEventListener("beforeinput", preventInputEditOutsideInsert)'), true);
+    assert.equal(page.includes("function preventInputEditOutsideInsert(event)"), true);
+    assert.equal(page.includes('if (inputMode !== "insert")'), true);
   }
 
   for (const page of [homePage, postPage]) {
