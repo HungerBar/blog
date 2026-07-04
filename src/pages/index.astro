@@ -3,13 +3,11 @@ import {
   buildTagTree,
   flattenTagTree,
   formatDate,
-  groupPostsByMonth,
 } from "../lib/content.mjs";
 import { getPublishedPosts } from "../lib/posts.mjs";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const posts = await getPublishedPosts();
-const archive = groupPostsByMonth(posts);
 const tags = flattenTagTree(buildTagTree(posts));
 const shellPosts = posts.map((post) => ({
   slug: post.slug,
@@ -19,18 +17,6 @@ const shellPosts = posts.map((post) => ({
   excerpt: post.excerpt,
   body: post.body,
   url: post.url,
-}));
-const shellArchive = archive.map((group) => ({
-  label: group.label,
-  posts: group.posts.map((post) => ({
-    slug: post.slug,
-    title: post.title,
-    date: formatDate(post.date),
-    tags: post.tags,
-    excerpt: post.excerpt,
-    body: post.body,
-    url: post.url,
-  })),
 }));
 const shellTags = tags.map((tag) => ({
   path: tag.path,
@@ -78,7 +64,7 @@ const latestDate = shellPosts[0]?.date ?? "";
     </form>
   </section>
 
-  <script define:vars={{ posts: shellPosts, archive: shellArchive, tags: shellTags, latestDate }}>
+  <script define:vars={{ posts: shellPosts, tags: shellTags, latestDate }}>
     const form = document.querySelector("[data-command-form]");
     const input = document.querySelector("[data-command-input]");
     const output = document.querySelector("[data-output]");
@@ -105,7 +91,6 @@ const latestDate = shellPosts[0]?.date ?? "";
       ["search <query>", "fuzzy search posts by title, date, excerpt, or tag"],
       ["recent [n]", "show the latest posts, default 10"],
       ["time <date>", "filter by date; examples: 2026, 06月, 07-02, 02"],
-      ["archive", "show posts grouped by month"],
       ["tags", "show the nested tag tree"],
       ["tag <path>", "show posts under a tag, e.g. tag tech/ai/agent"],
       ["open <number>", "open a post in vim-style reader. Run recent, search, or tag first to choose a numbered result."],
@@ -702,17 +687,17 @@ const latestDate = shellPosts[0]?.date ?? "";
         line(`  ${command.padEnd(16)} ${description}`);
       }
       line("");
-      line("vim keys:", "accent");
-      line("  i/a              enter insert mode");
-      line("  Esc              return to normal mode");
-      line("  h/l              move the command cursor left or right");
-      line("  0/$              move to line start or end");
-      line("  j/k              move through output, or scroll when input is focused");
-      line("  g/G              jump to top or bottom");
-      line("  v                start visual selection");
-      line("  y/c/d            copy, change, or delete selection");
-      line("  Enter            open the focused link");
-      line("  Ctrl+j/Ctrl+k    focus input or output");
+      line("vim keys:", "vim-help vim-help-title");
+      line("  i/a              enter insert mode", "vim-help");
+      line("  Esc              return to normal mode", "vim-help");
+      line("  h/l              move the command cursor left or right", "vim-help");
+      line("  0/$              move to line start or end", "vim-help");
+      line("  j/k              move through output, or scroll when input is focused", "vim-help");
+      line("  g/G              jump to top or bottom", "vim-help");
+      line("  v                start visual selection", "vim-help");
+      line("  y/c/d            copy, change, or delete selection", "vim-help");
+      line("  Enter            open the focused link", "vim-help");
+      line("  Ctrl+j/Ctrl+k    focus input or output", "vim-help");
     }
 
     function printPosts(items) {
@@ -729,16 +714,6 @@ const latestDate = shellPosts[0]?.date ?? "";
         );
       });
       line("use `open <number>` to open a result", "muted");
-    }
-
-    function printArchive() {
-      latestResults = [];
-      for (const group of archive) {
-        line(group.label, "accent");
-        for (const post of group.posts) {
-          line(`  ${post.date}  ${post.title}`);
-        }
-      }
     }
 
     function printTags() {
@@ -920,9 +895,6 @@ const latestDate = shellPosts[0]?.date ?? "";
           break;
         case "time":
           printTime(arg);
-          break;
-        case "archive":
-          printArchive();
           break;
         case "tags":
           printTags();

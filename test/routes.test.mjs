@@ -103,6 +103,7 @@ test("post reader keeps content in an independent block above the shell", () => 
 
 test("home shell supports normal and insert keyboard modes", () => {
   const homePage = readFileSync("src/pages/index.astro", "utf8");
+  const styles = readFileSync("src/styles/global.css", "utf8");
 
   assert.equal(homePage.includes("setInputMode"), true);
   assert.equal(
@@ -124,6 +125,20 @@ test("home shell supports normal and insert keyboard modes", () => {
   assert.equal(homePage.includes("0/$              move to line start or end"), true);
   assert.equal(homePage.includes("v                start visual selection"), true);
   assert.equal(homePage.includes("y/c/d            copy, change, or delete selection"), true);
+  assert.equal(homePage.includes('"vim-help"'), true);
+  assert.equal(homePage.includes('"vim-help vim-help-title"'), true);
+  assert.equal(styles.includes(".terminal-line.vim-help"), true);
+  assert.equal(styles.includes("font-size: 0.82rem"), true);
+  assert.equal(styles.includes("margin-bottom: 1px"), true);
+});
+
+test("home shell no longer exposes archive command", () => {
+  const homePage = readFileSync("src/pages/index.astro", "utf8");
+
+  assert.equal(homePage.includes('groupPostsByMonth'), false);
+  assert.equal(homePage.includes('["archive", "show posts grouped by month"]'), false);
+  assert.equal(homePage.includes('case "archive"'), false);
+  assert.equal(homePage.includes("function printArchive()"), false);
 });
 
 test("home page starts with centered pixel mark and shell hint above input", () => {
