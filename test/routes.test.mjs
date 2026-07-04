@@ -114,11 +114,14 @@ test("home shell supports normal and insert keyboard modes", () => {
   assert.equal(homePage.includes('event.key === "a"'), true);
   assert.equal(homePage.includes('event.key === "h"'), true);
   assert.equal(homePage.includes('event.key === "l"'), true);
+  assert.equal(homePage.includes('event.key === "0"'), true);
+  assert.equal(homePage.includes('event.key === "$"'), true);
   assert.equal(homePage.includes('event.ctrlKey && event.key === "j"'), true);
   assert.equal(homePage.includes('event.ctrlKey && event.key === "k"'), true);
   assert.equal(homePage.includes("vim keys:"), true);
   assert.equal(homePage.includes("i/a              enter insert mode"), true);
   assert.equal(homePage.includes("Esc              return to normal mode"), true);
+  assert.equal(homePage.includes("0/$              move to line start or end"), true);
   assert.equal(homePage.includes("v                start visual selection"), true);
   assert.equal(homePage.includes("y/c/d            copy, change, or delete selection"), true);
 });
@@ -201,6 +204,7 @@ test("home shell supports visual selection, copy, change, and delete commands", 
   assert.equal(homePage.includes('event.key === "y"'), true);
   assert.equal(homePage.includes('event.key === "c"'), true);
   assert.equal(homePage.includes('event.key === "d"'), true);
+  assert.equal(homePage.includes('["h", "j", "k", "l", "0", "$"].includes(event.key)'), true);
   assert.equal(homePage.includes("navigator.clipboard.writeText"), true);
   assert.equal(homePage.includes("document.createRange"), true);
   assert.equal(homePage.includes("window.getSelection"), true);
@@ -306,9 +310,30 @@ test("post reader supports visual selection and copying from content", () => {
   assert.equal(postPage.includes('event.key === "y"'), true);
   assert.equal(postPage.includes('event.key === "c"'), true);
   assert.equal(postPage.includes('event.key === "d"'), true);
+  assert.equal(postPage.includes('["h", "j", "k", "l", "0", "$"].includes(event.key)'), true);
   assert.equal(postPage.includes("navigator.clipboard.writeText"), true);
   assert.equal(postPage.includes("document.createRange"), true);
   assert.equal(postPage.includes("window.getSelection"), true);
+});
+
+test("normal and visual modes support vim line start and end keys", () => {
+  const homePage = readFileSync("src/pages/index.astro", "utf8");
+  const postPage = readFileSync("src/pages/posts/[slug].astro", "utf8");
+  const resumePage = readFileSync("src/pages/resume.astro", "utf8");
+
+  for (const page of [homePage, postPage, resumePage]) {
+    assert.equal(page.includes("function moveCursorToColumn(column)"), true);
+    assert.equal(page.includes("moveCursorToColumn(0)"), true);
+    assert.equal(page.includes("moveCursorToColumn(input.value.length - 1)"), true);
+  }
+
+  for (const page of [homePage, postPage]) {
+    assert.equal(page.includes("function moveOutputCursorColumnTo(column)"), true);
+    assert.equal(page.includes("moveOutputCursorColumnTo(0)"), true);
+    assert.equal(page.includes("moveOutputCursorColumnTo(getTextLength(target) - 1)"), true);
+    assert.equal(page.includes('if (key === "0" || key === "$")'), true);
+    assert.equal(page.includes('visualFocus.column = key === "0"'), true);
+  }
 });
 
 test("styles expose block cursor in normal mode and wider reading surface", () => {

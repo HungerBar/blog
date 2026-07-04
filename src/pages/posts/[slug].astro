@@ -135,6 +135,14 @@ const { Content } = await render(post);
       updateCursorView();
     }
 
+    function moveCursorToColumn(column) {
+      const endColumn = Math.max(0, input.value.length - 1);
+      const next = Math.max(0, Math.min(endColumn, column));
+      input.setSelectionRange(next, next);
+      input.focus();
+      updateCursorView();
+    }
+
     function getOutputCursorTargets() {
       return [...content.querySelectorAll("h1, h2, h3, p, li, pre, blockquote")];
     }
@@ -176,6 +184,19 @@ const { Content } = await render(post);
         0,
         Math.min(getTextLength(target), outputCursorColumn + delta),
       );
+      clearTextNodeCursor(target);
+      renderTextNodeCursor(target, outputCursorColumn);
+    }
+
+    function moveOutputCursorColumnTo(column) {
+      const targets = getOutputCursorTargets();
+      const target = targets[outputCursorIndex];
+      if (!target) {
+        return;
+      }
+
+      const endColumn = Math.max(0, getTextLength(target) - 1);
+      outputCursorColumn = Math.max(0, Math.min(endColumn, column));
       clearTextNodeCursor(target);
       renderTextNodeCursor(target, outputCursorColumn);
     }
@@ -365,13 +386,28 @@ const { Content } = await render(post);
             Math.min(getTextLength(target), visualFocus.column + delta),
           );
           outputCursorColumn = visualFocus.column;
+        } else if (key === "0" || key === "$") {
+          const target = targets[visualFocus.index];
+          if (!target) {
+            return;
+          }
+          visualFocus.column = key === "0"
+            ? 0
+            : Math.max(0, getTextLength(target) - 1);
+          outputCursorColumn = visualFocus.column;
         }
-      } else if (key === "h" || key === "l") {
-        const delta = key === "l" ? 1 : -1;
-        visualFocus.column = Math.max(
-          0,
-          Math.min(input.value.length, visualFocus.column + delta),
-        );
+      } else if (key === "h" || key === "l" || key === "0" || key === "$") {
+        if (key === "0" || key === "$") {
+          visualFocus.column = key === "0"
+            ? 0
+            : Math.max(0, input.value.length - 1);
+        } else {
+          const delta = key === "l" ? 1 : -1;
+          visualFocus.column = Math.max(
+            0,
+            Math.min(input.value.length, visualFocus.column + delta),
+          );
+        }
         input.setSelectionRange(visualFocus.column, visualFocus.column);
       }
 
@@ -590,7 +626,7 @@ const { Content } = await render(post);
       }
 
       if (inputMode === "visual") {
-        if (["h", "j", "k", "l"].includes(event.key)) {
+        if (["h", "j", "k", "l", "0", "$"].includes(event.key)) {
           event.preventDefault();
           extendVisualSelection(event.key);
           return;
@@ -674,6 +710,30 @@ const { Content } = await render(post);
           return;
         }
         moveCursor(1);
+        return;
+      }
+
+      if (event.key === "0") {
+        event.preventDefault();
+        if (focusPane === "output") {
+          moveOutputCursorColumnTo(0);
+          return;
+        }
+        moveCursorToColumn(0);
+        return;
+      }
+
+      if (event.key === "$") {
+        event.preventDefault();
+        if (focusPane === "output") {
+          const targets = getOutputCursorTargets();
+          const target = targets[outputCursorIndex];
+          if (target) {
+            moveOutputCursorColumnTo(getTextLength(target) - 1);
+          }
+          return;
+        }
+        moveCursorToColumn(input.value.length - 1);
         return;
       }
 

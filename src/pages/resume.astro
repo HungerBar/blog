@@ -97,6 +97,14 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       updateCursorView();
     }
 
+    function moveCursorToColumn(column) {
+      const endColumn = Math.max(0, input.value.length - 1);
+      const next = Math.max(0, Math.min(endColumn, column));
+      input.setSelectionRange(next, next);
+      input.focus();
+      updateCursorView();
+    }
+
     function flashFocusRing(element) {
       clearTimeout(focusTimer);
       resumeFrame.classList.remove("focus-ring");
@@ -226,6 +234,18 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       if (event.key === "l") {
         event.preventDefault();
         moveCursor(1);
+        return;
+      }
+
+      if (event.key === "0") {
+        event.preventDefault();
+        moveCursorToColumn(0);
+        return;
+      }
+
+      if (event.key === "$") {
+        event.preventDefault();
+        moveCursorToColumn(input.value.length - 1);
       }
     }
 
