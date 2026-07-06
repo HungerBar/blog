@@ -25,6 +25,9 @@ test("home page exposes a small resume button", () => {
   assert.equal(styles.includes(".terminal-shell"), true);
   assert.equal(styles.includes(".resume-link"), true);
   assert.equal(styles.includes("color: var(--accent)"), true);
+  assert.equal(styles.includes("--accent: #5b5bd6"), true);
+  assert.equal(styles.includes("--accent-hover: #8f7bff"), true);
+  assert.equal(styles.includes("a:hover {\n  color: var(--accent-hover);"), true);
   assert.equal(styles.includes("font-size: 1.1rem"), true);
   assert.equal(styles.includes("font-weight: 700"), true);
   assert.equal(styles.includes("text-align: center"), true);

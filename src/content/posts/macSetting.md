@@ -11,7 +11,7 @@ excerpt: "Some useful apps and vscode settings that make mac easier to use, even
 > 由于 ai, agent 等工具已经足够好用, 这里主要说明的是设置思路
 > 如果你只是想了解 mac 的设置, 可以只看第 __Manage Mac With Keyboard__(不用任何 vim 基础)
 
-## From Vim & Tmux
+# From Vim & Tmux
 
 > 这一块是一些废话, 毕竟现在大家都喜欢 GUI, 但这类基于 terminal 的 clean 的文本编辑器具有的将一切操作变为直觉的能力, 让我更专注于内容, 这也是后面我去探索的原因
 
@@ -32,7 +32,7 @@ excerpt: "Some useful apps and vscode settings that make mac easier to use, even
 这两个设计不但能让我们复用一些真正的舒服的键, 整合相似的快捷键, 同时还能很好的规避快捷键的冲突
 
 
-## Manage Mac With Keyboard
+# Manage Mac With Keyboard
 
 那么当我们从文本编辑器推广到 GUI, 也能通过一些软件和插件实现操作系统级别的 vim 吗?
 
@@ -105,7 +105,7 @@ excerpt: "Some useful apps and vscode settings that make mac easier to use, even
 }
 ```
 
-## To Vscode
+# To Vscode
 
 > 在 Vscode 中自定义一些快捷键, 装 vim 插件似乎有些不伦不类, 但不可否认的是 vscode 的生态很好, 很多你需要在 neovim + mason 中不断调设置的内容, 在 vscode 中只要装一个插件就可以解决
 > 那么自然的, 与其在 neovim 中半造轮子, 不如转投 vscode. 与此同时尽可能在 vscode 中尽可能的做一些设置, 让常用的操作变为直觉

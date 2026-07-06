@@ -5,7 +5,8 @@
   --text: #e6e1d7;
   --muted: #8c8c8c;
   --line: #303030;
-  --accent: #ffffff;
+  --accent: #5b5bd6;
+  --accent-hover: #8f7bff;
   --inverse: #ffffff;
   --surface: #111111;
   --surface-2: #171717;
@@ -35,7 +36,7 @@ a {
 }
 
 a:hover {
-  color: var(--inverse);
+  color: var(--accent-hover);
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
