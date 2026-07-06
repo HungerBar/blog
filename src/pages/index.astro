@@ -28,40 +28,44 @@ const latestDate = shellPosts[0]?.date ?? "";
 
 <BaseLayout title="Blog" section="shell">
   <section class="terminal" data-terminal>
-    <div class="home-stage" data-home-stage>
-      <pre class="pixel-logo" aria-label="Hungerbar">
+    <div class="terminal-main">
+      <div class="home-stage" data-home-stage>
+        <pre class="pixel-logo" aria-label="Hungerbar">
 █   █ █   █ █   █  ███  █████ ████  ████   ███  ████
 █   █ █   █ ██  █ █   █ █     █   █ █   █ █   █ █   █
 █████ █   █ █ █ █ █     ███   ████  ████  █████ ████
 █   █ █   █ █  ██ █  ██ █     █  █  █   █ █   █ █  █
 █   █  ███  █   █  ███  █████ █   █ ████  █   █ █   █
-      </pre>
+        </pre>
+      </div>
+
+      <div class="terminal-output" data-output tabindex="0"></div>
+
+      <p class="home-actions" data-home-actions>
+        <a class="resume-link" href="/resume/">resume</a>
+      </p>
     </div>
 
-    <div class="terminal-output" data-output tabindex="0"></div>
+    <div class="terminal-shell">
+      <p class="help-hint" data-help-hint>
+        type `help` to list commands; use `a` or `i` to enter insert mode
+      </p>
 
-    <p class="home-actions" data-home-actions>
-      <a class="resume-link" href="/resume/">resume</a>
-    </p>
-
-    <p class="help-hint" data-help-hint>
-      type `help` to list commands; use `a` or `i` to enter insert mode
-    </p>
-
-    <form class="terminal-input" data-command-form>
-      <span class="prompt" data-prompt>~/blog $</span>
-      <span class="mode-indicator" data-mode-indicator>[INSERT]</span>
-      <span class="command-entry">
-        <span class="normal-command-view" data-normal-command-view aria-hidden="true"></span>
-        <input
-          data-command-input
-          autocomplete="off"
-          spellcheck="false"
-          aria-label="Command input"
-          autofocus
-        />
-      </span>
-    </form>
+      <form class="terminal-input" data-command-form>
+        <span class="prompt" data-prompt>~/blog $</span>
+        <span class="mode-indicator" data-mode-indicator>[INSERT]</span>
+        <span class="command-entry">
+          <span class="normal-command-view" data-normal-command-view aria-hidden="true"></span>
+          <input
+            data-command-input
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Command input"
+            autofocus
+          />
+        </span>
+      </form>
+    </div>
   </section>
 
   <script define:vars={{ posts: shellPosts, tags: shellTags, latestDate }}>

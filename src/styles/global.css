@@ -95,10 +95,21 @@ h2 {
 .terminal {
   position: relative;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+  grid-template-rows: minmax(0, 1fr) auto;
   height: calc(100vh - 29px);
   overflow: hidden;
   padding: 28px 0 20px;
+}
+
+.terminal-main {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.terminal-shell {
+  background: var(--bg);
 }
 
 .resume-link {
@@ -195,7 +206,7 @@ h2 {
 }
 
 .help-hint {
-  margin: 0 0 10px;
+  margin: 0 18px 10px;
   color: var(--muted);
 }
 

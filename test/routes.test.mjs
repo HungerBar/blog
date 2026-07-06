@@ -15,11 +15,14 @@ test("home page exposes a small resume button", () => {
   assert.equal(homePage.includes('href="/resume/"'), true);
   assert.equal(homePage.includes("resume"), true);
   assert.equal(homePage.includes('class="shell-hints"'), false);
-  assert.equal(homePage.includes('</p>\n\n    <p class="help-hint"'), true);
+  assert.equal(homePage.includes('<div class="terminal-shell">'), true);
+  assert.equal(homePage.includes('</p>\n\n      <form class="terminal-input"'), true);
   assert.equal(homePage.indexOf('class="terminal-output"') < homePage.indexOf('class="resume-link"'), true);
   assert.equal(homePage.indexOf('class="resume-link"') < homePage.indexOf("type `help` to list commands"), true);
   assert.equal(styles.includes(".shell-hints"), false);
-  assert.equal(styles.includes("grid-template-rows: auto minmax(0, 1fr) auto auto auto"), true);
+  assert.equal(styles.includes("grid-template-rows: minmax(0, 1fr) auto"), true);
+  assert.equal(styles.includes(".terminal-main"), true);
+  assert.equal(styles.includes(".terminal-shell"), true);
   assert.equal(styles.includes(".resume-link"), true);
   assert.equal(styles.includes("color: var(--accent)"), true);
   assert.equal(styles.includes("font-size: 1.1rem"), true);
@@ -184,21 +187,27 @@ test("home page starts with centered pixel mark and shell hint above input", () 
   assert.equal(styles.includes(".home-stage"), true);
   assert.equal(styles.includes(".pixel-logo"), true);
   assert.equal(styles.includes(".help-hint"), true);
-  assert.equal(styles.includes("grid-template-rows: auto minmax(0, 1fr) auto auto"), true);
+  assert.equal(styles.includes(".terminal-main {\n  display: grid;\n  grid-template-rows: auto minmax(0, 1fr) auto;"), true);
   assert.equal(styles.includes("transform: translateY(144px) rotate(-4deg)"), true);
   assert.equal(styles.includes("font-size: clamp(0.72rem, 1.8vw, 1.35rem)"), true);
 });
 
-test("home terminal output scrolls without pushing the bottom shell", () => {
+test("home terminal output scrolls without pushing the bottom shell hint", () => {
+  const homePage = readFileSync("src/pages/index.astro", "utf8");
   const styles = readFileSync("src/styles/global.css", "utf8");
 
   assert.equal(styles.includes(".terminal {\n  position: relative;\n  display: grid;"), true);
+  assert.equal(styles.includes("grid-template-rows: minmax(0, 1fr) auto"), true);
+  assert.equal(styles.includes(".terminal-main {\n  display: grid;\n  grid-template-rows: auto minmax(0, 1fr) auto;"), true);
+  assert.equal(styles.includes(".terminal-shell {\n  background: var(--bg);"), true);
   assert.equal(styles.includes("overflow: hidden;"), true);
   assert.equal(styles.includes(".terminal-output {\n  min-height: 0;\n  height: 100%;\n  max-height: 100%;"), true);
   assert.equal(styles.includes("padding: 10px 18px 30px"), true);
   assert.equal(styles.includes("overflow-y: auto"), true);
   assert.equal(styles.includes("overscroll-behavior: contain"), true);
   assert.equal(styles.includes("scrollbar-gutter: stable"), true);
+  assert.equal(homePage.indexOf('class="terminal-output"') < homePage.indexOf('class="terminal-shell"'), true);
+  assert.equal(homePage.indexOf('class="help-hint"') < homePage.indexOf('class="terminal-input"'), true);
 }
 );
 
