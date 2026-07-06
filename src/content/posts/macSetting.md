@@ -31,6 +31,9 @@ excerpt: "Some useful apps and vscode settings that make mac easier to use, even
 
 这两个设计不但能让我们复用一些真正的舒服的键, 整合相似的快捷键, 同时还能很好的规避快捷键的冲突
 
+
+## Manage Mac With Keyboard
+
 那么当我们从文本编辑器推广到 GUI, 也能通过一些软件和插件实现操作系统级别的 vim 吗?
 
 根据使用经验, 大致有以下频繁需要鼠标的几类操作
@@ -38,8 +41,6 @@ excerpt: "Some useful apps and vscode settings that make mac easier to use, even
 - 打开某软件
 - 全屏, 放缩为左半屏等窗口管理操作
 - 在某软件的多个窗口间切换
-
-## Manage Mac With Keyboard
 
 [教程](https://youtu.be/DBifQv9AYhc?si=Xva-LBOWSLwpSmHV)
 
