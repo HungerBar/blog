@@ -380,13 +380,22 @@ body[data-input-mode="visual"] .terminal-input {
   outline: none;
 }
 
+.reader-layout:not(.resume-layout) .reader-frame {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
+.reader-layout:not(.resume-layout) .article {
+  max-width: min(112ch, 100%);
+}
+
 .reader-frame .article {
   padding-top: 6px;
   padding-bottom: 36px;
 }
 
 .post-comments {
-  max-width: min(92ch, 100%);
+  max-width: min(112ch, 100%);
   padding: 0 18px 56px;
 }
 
@@ -423,7 +432,21 @@ body[data-input-mode="visual"] .terminal-input {
 }
 
 .article img {
+  width: auto;
   max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.article blockquote {
+  margin: 0 0 16px;
+  border-left: 4px solid var(--line);
+  padding: 0 0 0 16px;
+  color: var(--muted);
+}
+
+.article blockquote > :last-child {
+  margin-bottom: 0;
 }
 
 .article pre {

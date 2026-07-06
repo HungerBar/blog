@@ -152,8 +152,18 @@ test("post reader keeps content in an independent block above the shell", () => 
   assert.equal(styles.includes(".reader-layout"), true);
   assert.equal(styles.includes(".reader-frame"), true);
   assert.equal(styles.includes("grid-template-rows: minmax(0, 1fr) auto"), true);
+  assert.equal(styles.includes(".reader-layout:not(.resume-layout) .reader-frame"), true);
+  assert.equal(styles.includes("width: 100vw"), true);
+  assert.equal(styles.includes("margin-left: calc(50% - 50vw)"), true);
+  assert.equal(styles.includes(".reader-layout {\n  display: grid;\n  grid-template-rows: minmax(0, 1fr) auto;\n  height: calc(100vh - 29px);\n  padding: 28px 0 20px;\n}"), true);
+  assert.equal(styles.includes("max-width: min(112ch, 100%)"), true);
+  assert.equal(styles.includes(".article blockquote"), true);
+  assert.equal(styles.includes("border-left: 4px solid var(--line)"), true);
+  assert.equal(styles.includes("height: auto"), true);
+  assert.equal(styles.includes("object-fit: contain"), true);
   assert.equal(styles.includes(".post-command"), true);
   assert.equal(styles.includes(".post-shell-hint"), true);
+  assert.equal(styles.includes(".post-command {\n  padding: 22px 18px 14px;\n  background: var(--bg);"), true);
   assert.equal(styles.includes("position: fixed"), false);
 }
 );
